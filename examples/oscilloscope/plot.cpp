@@ -90,7 +90,8 @@ Plot::Plot( QWidget *parent ):
 
     setAxisTitle( QwtPlot::xBottom, "Time [s]" );
     setAxisScale( QwtPlot::xBottom, d_interval.minValue(), d_interval.maxValue(),1.0 );
-    setAxisScale( QwtPlot::yLeft, -200.0, 200.0 );
+    setAxisTitle( QwtPlot::yLeft,"Voltage [mV]");
+    setAxisScale( QwtPlot::yLeft, -200.0, 200.0,400.0/8 );
 
     QwtPlotGrid *grid = new QwtPlotGrid();
     grid->setPen( Qt::yellow, 0.0, Qt::DotLine );
