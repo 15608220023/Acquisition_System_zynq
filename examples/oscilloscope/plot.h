@@ -16,9 +16,8 @@ public:
 
     void start();
     virtual void replot();
-
     virtual bool eventFilter( QObject *, QEvent * );
-
+    QwtSystemClock d_clock;
 public Q_SLOTS:
     void setIntervalLength( double );
 
@@ -29,6 +28,7 @@ protected:
 
 private:
     void updateCurve();
+    void cleanCurve();
     void incrementInterval();
 
     QwtPlotMarker *d_origin;
@@ -40,5 +40,5 @@ private:
     QwtInterval d_interval;
     int d_timerId;
 
-    QwtSystemClock d_clock;
+
 };

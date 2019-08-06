@@ -69,7 +69,7 @@ private:
 #endif
 
         // QPalette::WindowText is used for the curve color
-        pal.setColor( QPalette::WindowText, Qt::green );
+        pal.setColor( QPalette::WindowText, Qt::yellow );
 
         setPalette( pal );
     }
@@ -124,7 +124,7 @@ Plot::~Plot()
 void Plot::start()
 {
     d_clock.start();
-    d_timerId = startTimer( 10 );
+    d_timerId = startTimer( 10 );//10ms定时器
 }
 
 void Plot::replot()
@@ -152,7 +152,11 @@ void Plot::setIntervalLength( double interval )
 
 void Plot::updateCurve()
 {
+    //static bool isFirst = true;
     CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
+    //if(isFirst == false)
+        //curveData->values().clearStaleValues( 1.0);
+    //isFirst = false;
     curveData->values().lock();
 
     const int numPoints = curveData->size();
@@ -220,12 +224,12 @@ void Plot::timerEvent( QTimerEvent *event )
 {
     if ( event->timerId() == d_timerId )
     {
+        cleanCurve();
+        replot();
         updateCurve();
-
-        const double elapsed = d_clock.elapsed() / 1000.0;
-        if ( elapsed > d_interval.maxValue() )
-            incrementInterval();
-
+        const double elapsed = d_clock.elapsed() / 1000.0; //变量elapsed单位是s
+       // if ( elapsed > d_interval.maxValue() )
+        //    incrementInterval();
         return;
     }
 
@@ -252,4 +256,44 @@ bool Plot::eventFilter( QObject *object, QEvent *event )
     }
 
     return QwtPlot::eventFilter( object, event );
+}
+
+void Plot::cleanCurve()
+{
+    static bool isFirst = true;
+    CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
+    if(isFirst == false)
+        curveData->values().clearStaleValues(0.0001);
+    isFirst = false;
+    curveData->values().lock();
+
+    const int numPoints = curveData->size();
+    if ( numPoints > d_paintedPoints )
+    {
+        const bool doClip = !canvas()->testAttribute( Qt::WA_PaintOnScreen );
+        if ( doClip )
+        {
+            /*
+                Depending on the platform setting a clip might be an important
+                performance issue. F.e. for Qt Embedded this reduces the
+                part of the backing store that has to be copied out - maybe
+                to an unaccelerated frame buffer device.
+            */
+
+            const QwtScaleMap xMap = canvasMap( d_curve->xAxis() );
+            const QwtScaleMap yMap = canvasMap( d_curve->yAxis() );
+
+            QRectF br = qwtBoundingRect( *curveData,
+                d_paintedPoints - 1, numPoints - 1 );
+
+            const QRect clipRect = QwtScaleMap::transform( xMap, yMap, br ).toRect();
+            d_directPainter->setClipRegion( clipRect );
+        }
+
+        d_directPainter->drawSeries( d_curve,
+            d_paintedPoints - 1, numPoints - 1 );
+        d_paintedPoints = numPoints;
+    }
+
+    curveData->values().unlock();
 }
