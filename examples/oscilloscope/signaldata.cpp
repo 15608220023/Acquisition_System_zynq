@@ -80,6 +80,7 @@ void SignalData::unlock()
 
 void SignalData::append( const QPointF &sample )
 {
+    static int count = 0;
     d_data->mutex.lock();
     d_data->pendingValues += sample;
 
@@ -110,18 +111,20 @@ void SignalData::clearStaleValues( double limit )
     d_data->values.clear();
     d_data->values.reserve( values.size() );
 
-    int index;
+    int index=0;
     for ( index = values.size() - 1; index >= 0; index-- )
     {
         if ( values[index].x() < limit )
             break;
     }
-
-    if ( index > 0 )
-        d_data->append( values[index++] );
-
+   // if ( index > 0 )
+    //    d_data->append( values[0] );
+    int i=0;
     while ( index < values.size() - 1 )
-        d_data->append( values[index++] );
+    {
+
+            d_data->append( values[index++] );
+    }
 
     d_data->lock.unlock();
 }

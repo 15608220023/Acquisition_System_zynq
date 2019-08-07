@@ -18,7 +18,6 @@ public:
 
     void lock();
     void unlock();
-
 private:
     SignalData();
     SignalData( const SignalData & );

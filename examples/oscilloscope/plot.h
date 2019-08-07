@@ -5,7 +5,6 @@
 class QwtPlotCurve;
 class QwtPlotMarker;
 class QwtPlotDirectPainter;
-
 class Plot: public QwtPlot
 {
     Q_OBJECT
@@ -17,7 +16,7 @@ public:
     void start();
     virtual void replot();
     virtual bool eventFilter( QObject *, QEvent * );
-    QwtSystemClock d_clock;
+
 public Q_SLOTS:
     void setIntervalLength( double );
 
@@ -30,7 +29,7 @@ private:
     void updateCurve();
     void cleanCurve();
     void incrementInterval();
-
+    QwtSystemClock d_clock;
     QwtPlotMarker *d_origin;
     QwtPlotCurve *d_curve;
     int d_paintedPoints;
@@ -42,3 +41,4 @@ private:
 
 
 };
+

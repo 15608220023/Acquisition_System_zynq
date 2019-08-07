@@ -2,7 +2,8 @@
 #include "signaldata.h"
 #include <qwt_math.h>
 #include <math.h>
-
+bool plotcomplete;
+bool ReadDataisOK = true;
 #if QT_VERSION < 0x040600
 #define qFastSin(x) ::sin(x)
 #endif
@@ -36,20 +37,18 @@ double SamplingThread::amplitude() const
 
 void SamplingThread::sample( double elapsed )
 {
-    static int count =0;
-    count++;
-    const double period = 1.0 / d_frequency;
-    if ( d_frequency > 0.0 )
+    if ( d_frequency > 0.0&&plotcomplete == true)
     {
-        //const QPointF s( elapsed, value( elapsed ) );
+        ReadDataisOK = false;
+        plotcomplete = false;
         for(int i=0;i<1000;i++)
         {
-            const double x = ::fmod( (double)i, d_frequency );
             double value = d_amplitude * qFastSin( (double)i/1000* d_frequency * 2 * M_PI );
             const QPointF s( (double)i/100, value );
             SignalData::instance().append( s );
-            count =0;
         }
+        ReadDataisOK = true;
+
     }
 }
 
