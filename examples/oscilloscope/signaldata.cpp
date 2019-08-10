@@ -26,10 +26,11 @@ public:
         {
             boundingRect.setRight( sample.x() );
 
-            if ( sample.y() > boundingRect.bottom() )
+
+            if ( sample.y() < boundingRect.bottom() )
                 boundingRect.setBottom( sample.y() );
 
-            if ( sample.y() < boundingRect.top() )
+            if ( sample.y() > boundingRect.top() )
                 boundingRect.setTop( sample.y() );
         }
     }
@@ -80,10 +81,9 @@ void SignalData::unlock()
 
 void SignalData::append( const QPointF &sample )
 {
-    static int count = 0;
+    static QPointF last_sample(0.0,0.0);
     d_data->mutex.lock();
     d_data->pendingValues += sample;
-
     const bool isLocked = d_data->lock.tryLockForWrite();
     if ( isLocked )
     {
@@ -91,7 +91,11 @@ void SignalData::append( const QPointF &sample )
         const QPointF *pendingValues = d_data->pendingValues.data();
 
         for ( int i = 0; i < numValues; i++ )
-            d_data->append( pendingValues[i] );
+        {
+
+             d_data->append( pendingValues[i] );
+        }
+       // d_data->append(sample);
 
         d_data->pendingValues.clear();
 
@@ -103,28 +107,29 @@ void SignalData::append( const QPointF &sample )
 
 void SignalData::clearStaleValues( double limit )
 {
+
     d_data->lock.lockForWrite();
 
     d_data->boundingRect = QRectF( 1.0, 1.0, -2.0, -2.0 ); // invalid
 
-    const QVector<QPointF> values = d_data->values;
+    values.clear();
+    values.reserve(1000);
+    values = d_data->values;
     d_data->values.clear();
-    d_data->values.reserve( values.size() );
-
-    int index=0;
-    for ( index = values.size() - 1; index >= 0; index-- )
+    d_data->values.reserve( 1000 );
+    //int index=0;
+    /*for ( index = values.size() - 1; index >= 0; index-- )
     {
         if ( values[index].x() < limit )
             break;
-    }
+    }*/
    // if ( index > 0 )
     //    d_data->append( values[0] );
-    int i=0;
-    while ( index < values.size() - 1 )
-    {
 
-            d_data->append( values[index++] );
-    }
+    /*while ( index < 999  )
+    {
+        d_data->append( values[index++] );
+    }*/
 
     d_data->lock.unlock();
 }
@@ -133,4 +138,17 @@ SignalData &SignalData::instance()
 {
     static SignalData valueVector;
     return valueVector;
+}
+
+
+void SignalData::plotdata()
+{
+    d_data->lock.lockForWrite();
+    int index = 0;
+    for(index = 0;index<1000;index++)
+    {
+        if(values.size()>0)
+        d_data->append( values[index] );
+    }
+    d_data->lock.unlock();
 }

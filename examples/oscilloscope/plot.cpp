@@ -127,7 +127,7 @@ Plot::~Plot()
 void Plot::start()
 {
     d_clock.start();
-    d_timerId = startTimer( 1 );//10ms定时器
+    d_timerId = startTimer( 10 );//10ms定时器
 }
 
 void Plot::replot()
@@ -158,12 +158,16 @@ void Plot::setIntervalLength( double interval )
 void Plot::updateCurve()
 {
     CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
-    curveData->values().clearStaleValues(0.0001);
-    curveData->values().lock();
+    //curveData->values().lock();
+    curveData->values().clearStaleValues(0.001);
+    //QwtPlot::replot();
+    curveData->values().plotdata();
+    QwtPlot::replot();
+    //QwtPlot::replot();
+   // curveData->values().lock();
 
-    const int numPoints = curveData->size();
-
-    if ( numPoints > d_paintedPoints )
+    //const int numPoints = curveData->size();
+    /*if ( numPoints > d_paintedPoints )
     {
         const bool doClip = !canvas()->testAttribute( Qt::WA_PaintOnScreen );
         if ( doClip )
@@ -173,7 +177,7 @@ void Plot::updateCurve()
                 performance issue. F.e. for Qt Embedded this reduces the
                 part of the backing store that has to be copied out - maybe
                 to an unaccelerated frame buffer device.
-            */
+
 
             const QwtScaleMap xMap = canvasMap( d_curve->xAxis() );
             const QwtScaleMap yMap = canvasMap( d_curve->yAxis() );
@@ -188,9 +192,9 @@ void Plot::updateCurve()
         d_directPainter->drawSeries( d_curve,
             d_paintedPoints - 1, numPoints - 1 );
         d_paintedPoints = numPoints;
-    }
+    }*/
 
-    curveData->values().unlock();
+    //curveData->values().unlock();
 }
 
 void Plot::incrementInterval()
@@ -225,18 +229,21 @@ void Plot::incrementInterval()
 
 void Plot::timerEvent( QTimerEvent *event )
 {
-    if ( event->timerId() == d_timerId&&ReadDataisOK == true )
+    static int success_count = 0;
+    static int fail_count = 0;
+    if  (event->timerId() == d_timerId&&ReadDataisOK == true)
     {
-        //cleanCurve();
+        //replot();
         plotcomplete = false;
+        //QwtPlot::replot();
         updateCurve();
-        replot();
         const double elapsed = d_clock.elapsed() / 1000.0; //变量elapsed单位是s
        // if ( elapsed > d_interval.maxValue() )
         //    incrementInterval();
         plotcomplete = true;
         return;
     }
+
 
     QwtPlot::timerEvent( event );
 }
@@ -268,7 +275,7 @@ void Plot::cleanCurve()
     //static bool isFirst = true;
     CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
     //if(isFirst == false)
-        curveData->values().clearStaleValues(0.00001);
+        curveData->values().clearStaleValues(0.001);
     //isFirst = false;
     curveData->values().lock();
 

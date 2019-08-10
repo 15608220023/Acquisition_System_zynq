@@ -37,10 +37,12 @@ double SamplingThread::amplitude() const
 
 void SamplingThread::sample( double elapsed )
 {
+    //QPointF plotdata[1000];
     if ( d_frequency > 0.0&&plotcomplete == true)
     {
-        ReadDataisOK = false;
         plotcomplete = false;
+        ReadDataisOK = false;
+        SignalData::instance().clearStaleValues(0.001);
         for(int i=0;i<1000;i++)
         {
             double value = d_amplitude * qFastSin( (double)i/1000* d_frequency * 2 * M_PI );
@@ -48,7 +50,6 @@ void SamplingThread::sample( double elapsed )
             SignalData::instance().append( s );
         }
         ReadDataisOK = true;
-
     }
 }
 

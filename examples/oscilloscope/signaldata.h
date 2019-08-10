@@ -2,6 +2,7 @@
 #define _SIGNAL_DATA_H_ 1
 
 #include <qrect.h>
+#include <qvector.h>
 
 class SignalData
 {
@@ -10,10 +11,11 @@ public:
 
     void append( const QPointF &pos );
     void clearStaleValues( double min );
+    void plotdata();
 
     int size() const;
     QPointF value( int index ) const;
-
+    QVector<QPointF> values;
     QRectF boundingRect() const;
 
     void lock();
