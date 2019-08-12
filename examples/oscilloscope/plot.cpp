@@ -127,15 +127,16 @@ Plot::~Plot()
 void Plot::start()
 {
     d_clock.start();
-    d_timerId = startTimer( 10 );//10ms定时器
+    d_timerId = startTimer( 20 );//10ms定时器
 }
 
 void Plot::replot()
 {
     CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
     //curveData->values().clearStaleValues(0.0001);
-    curveData->values().lock();
+    //curveData->values().lock();
 
+    curveData->values().lockForWrite();
     QwtPlot::replot();
     d_paintedPoints = curveData->size();
 
@@ -158,11 +159,11 @@ void Plot::setIntervalLength( double interval )
 void Plot::updateCurve()
 {
     CurveData *curveData = static_cast<CurveData *>( d_curve->data() );
-    //curveData->values().lock();
+    curveData->values().lockForWrite();
     curveData->values().clearStaleValues(0.001);
-    //QwtPlot::replot();
+    //replot();
     curveData->values().plotdata();
-    QwtPlot::replot();
+    replot();
     //QwtPlot::replot();
    // curveData->values().lock();
 
@@ -229,17 +230,10 @@ void Plot::incrementInterval()
 
 void Plot::timerEvent( QTimerEvent *event )
 {
-    static int success_count = 0;
-    static int fail_count = 0;
     if  (event->timerId() == d_timerId&&ReadDataisOK == true)
     {
-        //replot();
         plotcomplete = false;
-        //QwtPlot::replot();
         updateCurve();
-        const double elapsed = d_clock.elapsed() / 1000.0; //变量elapsed单位是s
-       // if ( elapsed > d_interval.maxValue() )
-        //    incrementInterval();
         plotcomplete = true;
         return;
     }

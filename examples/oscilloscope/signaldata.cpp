@@ -38,6 +38,7 @@ public:
     QReadWriteLock lock;
 
     QVector<QPointF> values;
+    QVector<QPointF> values_buffer;
     QRectF boundingRect;
 
     QMutex mutex; // protecting pendingValues
@@ -74,6 +75,11 @@ void SignalData::lock()
     d_data->lock.lockForRead();
 }
 
+void SignalData::lockForWrite()
+{
+    d_data->lock.lockForWrite();
+}
+
 void SignalData::unlock()
 {
     d_data->lock.unlock();
@@ -83,21 +89,21 @@ void SignalData::append( const QPointF &sample )
 {
     static QPointF last_sample(0.0,0.0);
     d_data->mutex.lock();
-    d_data->pendingValues += sample;
+    //d_data->pendingValues += sample;
     const bool isLocked = d_data->lock.tryLockForWrite();
     if ( isLocked )
     {
-        const int numValues = d_data->pendingValues.size();
+       /* const int numValues = d_data->pendingValues.size();
         const QPointF *pendingValues = d_data->pendingValues.data();
 
         for ( int i = 0; i < numValues; i++ )
         {
 
              d_data->append( pendingValues[i] );
-        }
-       // d_data->append(sample);
+        }*/
+        d_data->append(sample);
 
-        d_data->pendingValues.clear();
+        //d_data->pendingValues.clear();
 
         d_data->lock.unlock();
     }
@@ -108,13 +114,13 @@ void SignalData::append( const QPointF &sample )
 void SignalData::clearStaleValues( double limit )
 {
 
-    d_data->lock.lockForWrite();
+    //d_data->lock.lockForWrite();
 
-    d_data->boundingRect = QRectF( 1.0, 1.0, -2.0, -2.0 ); // invalid
+    //d_data->boundingRect = QRectF( 1.0, 1.0, -2.0, -2.0 ); // invalid
 
-    values.clear();
-    values.reserve(1000);
-    values = d_data->values;
+    values_buffer.clear();
+    values_buffer.reserve(1000);
+    values_buffer = d_data->values;
     d_data->values.clear();
     d_data->values.reserve( 1000 );
     //int index=0;
@@ -145,10 +151,10 @@ void SignalData::plotdata()
 {
     d_data->lock.lockForWrite();
     int index = 0;
-    for(index = 0;index<1000;index++)
+    for(index = 0;index<values_buffer.size();index++)
     {
-        if(values.size()>0)
-        d_data->append( values[index] );
+        if(values_buffer.size()>0)
+        d_data->append( values_buffer[index] );
     }
     d_data->lock.unlock();
 }

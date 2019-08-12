@@ -21,3 +21,4 @@ SOURCES = \
     plot.cpp \
     mainwindow.cpp \
     main.cpp
+CONFIG += debug

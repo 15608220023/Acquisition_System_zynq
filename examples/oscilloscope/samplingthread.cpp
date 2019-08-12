@@ -42,6 +42,8 @@ void SamplingThread::sample( double elapsed )
     {
         plotcomplete = false;
         ReadDataisOK = false;
+        SignalData::instance().lock();
+        SignalData::instance().values.reserve(1000);
         SignalData::instance().clearStaleValues(0.001);
         for(int i=0;i<1000;i++)
         {
@@ -50,6 +52,7 @@ void SamplingThread::sample( double elapsed )
             SignalData::instance().append( s );
         }
         ReadDataisOK = true;
+        SignalData::instance().unlock();
     }
 }
 

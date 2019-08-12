@@ -2,3 +2,4 @@
 *examples/build-oscilloscope-Desktop_Qt_5_7_1_GCC_64bit-Debug/
 *.swp
 *-Debug
+*examples/bin/

@@ -16,10 +16,13 @@ public:
     int size() const;
     QPointF value( int index ) const;
     QVector<QPointF> values;
+    QVector<QPointF> values_buffer;
     QRectF boundingRect() const;
 
     void lock();
     void unlock();
+    void lockForWrite();
+
 private:
     SignalData();
     SignalData( const SignalData & );
